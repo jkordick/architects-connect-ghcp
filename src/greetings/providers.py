@@ -9,6 +9,8 @@ from typing import Protocol
 from greetings.local_templates import (
     get_birthday_simple,
     get_birthday_small,
+    get_general_simple,
+    get_general_small,
 )
 
 
@@ -41,7 +43,7 @@ class LocalProvider:
         """Initialize the local provider.
         
         Args:
-            kind: The kind of greeting (currently only "birthday" supported).
+            kind: The kind of greeting ("birthday" or "general").
         """
         self.kind = kind
     
@@ -60,6 +62,8 @@ class LocalProvider:
         """
         if self.kind == "birthday":
             return self._get_birthday_ascii(name, style)
+        elif self.kind == "general":
+            return self._get_general_ascii(name, style)
         raise ValueError(f"Unknown kind: {self.kind}")
     
     def _get_birthday_ascii(self, name: str, style: str) -> tuple[str, str]:
@@ -73,7 +77,7 @@ class LocalProvider:
             Tuple of (ascii_art, greeting_message).
         """
         if style == "banner":
-            return self._get_banner_style(name)
+            return self._get_banner_style(name, "birthday")
         elif style == "small":
             return get_birthday_small(name)
         elif style == "simple":
@@ -81,30 +85,63 @@ class LocalProvider:
         else:
             raise ValueError(f"Unknown style: {style}")
     
-    def _get_banner_style(self, name: str) -> tuple[str, str]:
+    def _get_general_ascii(self, name: str, style: str) -> tuple[str, str]:
+        """Generate general greeting ASCII art.
+        
+        Args:
+            name: The recipient's name.
+            style: The style of greeting.
+            
+        Returns:
+            Tuple of (ascii_art, greeting_message).
+        """
+        if style == "banner":
+            return self._get_banner_style(name, "general")
+        elif style == "small":
+            return get_general_small(name)
+        elif style == "simple":
+            return get_general_simple(name)
+        else:
+            raise ValueError(f"Unknown style: {style}")
+    
+    def _get_banner_style(self, name: str, kind: str) -> tuple[str, str]:
         """Generate banner-style greeting using pyfiglet if available.
         
         Args:
             name: The name to render in the banner.
+            kind: The type of greeting (birthday or general).
             
         Returns:
             Tuple of (banner_art, greeting_message).
         """
+        if kind == "birthday":
+            text = f"For {name}"
+            greeting = "🎈 Wishing you all the best on your special day! 🎈"
+        else:
+            text = f"For {name}"
+            greeting = "👋 Sending you warm wishes and good vibes! 🌟"
+        
         try:
             import pyfiglet
-            banner = pyfiglet.figlet_format(f"Happy {name}", font="small")
+            banner = pyfiglet.figlet_format(text, font="small")
         except ImportError:
             # Fallback if pyfiglet is not installed
-            banner = f"""
-  _   _                         
- | | | | __ _ _ __  _ __  _   _ 
- | |_| |/ _` | '_ \\| '_ \\| | | |
- |  _  | (_| | |_) | |_) | |_| |
- |_| |_|\\__,_| .__/| .__/ \\__, |
-             |_|   |_|    |___/ 
-  Birthday, {name}!
+            if kind == "birthday":
+                banner = f"""
+  ___          
+ | __|__ _ _   
+ | _/ _ \\ '_|  
+ |_|\\___/_|    
+  {name}!
 """
-        greeting = "🎈 Wishing you all the best on your special day! 🎈"
+            else:
+                banner = f"""
+  ___          
+ | __|__ _ _   
+ | _/ _ \\ '_|  
+ |_|\\___/_|    
+  {name}!
+"""
         return banner, greeting
 
 
@@ -113,7 +150,7 @@ def get_provider(source: str = "local", kind: str = "birthday") -> Provider:
     
     Args:
         source: The provider source ("local" is currently the only option).
-        kind: The kind of greeting (e.g., "birthday").
+        kind: The kind of greeting (e.g., "birthday", "general").
         
     Returns:
         A Provider instance.

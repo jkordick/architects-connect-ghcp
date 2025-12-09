@@ -4,85 +4,88 @@ A Python command-line tool for generating beautiful ASCII greeting cards in the 
 
 ## Features
 
-- 🎂 Birthday greeting cards with multiple styles
-- 🎨 ASCII art generation using pyfiglet
-- 🖥️ Rich terminal UI with spinners and colors
-- 📦 Single-file executable packaging with PyInstaller
-- 💿 DMG packaging for macOS distribution
+- 🎂 **Birthday cards** - Celebrate someone's special day
+- 👋 **General greetings** - Send warm wishes anytime
+- 🧙 **Interactive wizard** - Step-by-step card creation
+- 🎨 **Multiple styles** - Banner, small, or simple designs
+- 💾 **Export support** - Save cards to text files
+- 🖥️ **Rich terminal UI** - Colors, panels, and spinners
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.11 or higher
-- pip (Python package manager)
+- Python 3.9 or higher
 
 ### Installation
 
-1. Clone the repository and navigate to the project directory:
-
 ```bash
-cd greetings
-```
+# Clone the repository
+git clone <repo-url>
+cd architects-connect-ghcp
 
-2. Create and activate a virtual environment (recommended):
-
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
-```
-
-3. Install dependencies:
-
-```bash
-make install-dev
-# or
-pip install -r requirements.txt
+# Install dependencies
+pip3 install -r requirements.txt
 ```
 
 ## Usage
 
-### Generate a Birthday Card
+### Interactive Mode (Recommended)
 
-Using the module directly:
+Start the interactive wizard that guides you through creating a card:
 
 ```bash
-python -m greetings.cli birthday --name Alice
+cd src && python3 -m greetings.cli
 ```
 
-Or with specific styles:
+The wizard will ask you:
+1. **Card type** - Birthday or General greeting
+2. **Recipient name** - Who the card is for
+3. **Style** - Banner (large), Small (compact), or Simple (minimal)
+4. **Action** - Display now, export to file, or both
+
+### Direct Commands
+
+#### Birthday Card
 
 ```bash
-# Banner style (default) - large ASCII art
-python -m greetings.cli birthday --name Alice --style banner
-
-# Small style - compact ASCII cake
-python -m greetings.cli birthday --name Bob --style small
-
-# Simple style - single line greeting
-python -m greetings.cli birthday --name Charlie --style simple
+cd src && python3 -m greetings.cli birthday --name Alice --style banner
 ```
 
-Add animation with the `--animate` flag:
+Options:
+- `--name` (required) - Recipient's name
+- `--style` - `banner` (default), `small`, or `simple`
+- `--animate` / `--no-animate` - Add animation delay
+- `--export <path>` - Export to file instead of displaying
+
+#### General Greeting
 
 ```bash
-python -m greetings.cli birthday --name Alice --animate
+cd src && python3 -m greetings.cli general --name Bob --style small
 ```
 
-### Run the Autoplay Demo
+Options:
+- `--name` (required) - Recipient's name  
+- `--style` - `banner` (default), `small`, or `simple`
+- `--export <path>` - Export to file instead of displaying
 
-The autoplay script demonstrates the greeting card generation without user input:
-
-```bash
-python examples/autoplay.py
-# or
-make autoplay
-```
-
-With options:
+### Examples
 
 ```bash
-python examples/autoplay.py --name "Birthday Person" --style small --no-animate
+# Interactive mode
+cd src && python3 -m greetings.cli
+
+# Birthday with large banner
+cd src && python3 -m greetings.cli birthday --name "Alice" --style banner
+
+# Simple birthday greeting
+cd src && python3 -m greetings.cli birthday --name "Bob" --style simple
+
+# Export a card to file
+cd src && python3 -m greetings.cli birthday --name "Charlie" --export card.txt
+
+# General greeting
+cd src && python3 -m greetings.cli general --name "Diana" --style small
 ```
 
 ## Development
@@ -95,49 +98,53 @@ make test
 PYTHONPATH=src pytest tests/ -v
 ```
 
-### Code Structure
+### Project Structure
 
 ```
-src/greetings/
-├── __init__.py         # Package initialization
-├── cli.py              # Click CLI commands
-├── providers.py        # Provider protocol and LocalProvider
-├── local_templates.py  # ASCII art templates
-└── utils.py            # Utility functions (sanitization)
+├── src/greetings/
+│   ├── __init__.py         # Package initialization
+│   ├── cli.py              # Click CLI with interactive wizard
+│   ├── providers.py        # Provider protocol and LocalProvider
+│   ├── local_templates.py  # ASCII art templates
+│   └── utils.py            # Sanitization utilities
+├── bin/
+│   └── greetings           # Executable entrypoint
+├── examples/
+│   └── autoplay.py         # Demo automation script
+├── tests/
+│   └── test_cli.py         # Test suite
+├── scripts/
+│   └── package.sh          # Build script
+├── Makefile                # Development tasks
+├── pyproject.toml          # Project configuration
+└── requirements.txt        # Dependencies
+```
 
-bin/
-└── greetings           # Executable entrypoint
+### Run Autoplay Demo
 
-examples/
-└── autoplay.py         # Demo automation script
-
-tests/
-└── test_cli.py         # Test suite
+```bash
+make autoplay
+# or
+PYTHONPATH=src python3 examples/autoplay.py
 ```
 
 ## Building & Packaging
 
 ### Build Single-File Executable
 
-Create a standalone executable (works on any OS):
-
 ```bash
 make build
 ```
 
-This produces `dist/greetings` - a single-file executable that can be distributed without Python installed on the target machine.
+Creates `dist/greetings` - a standalone executable.
 
 ### Create DMG Package (macOS only)
-
-On macOS, you can create a DMG disk image for distribution:
 
 ```bash
 make package
 ```
 
-This creates `dist/Greetings.dmg` containing the executable and README.
-
-> **Note:** DMG creation only works on macOS. Running `make package` on other operating systems will still build the executable and display an informative message.
+Creates `dist/Greetings.dmg` for distribution.
 
 ### Clean Build Artifacts
 
@@ -147,20 +154,17 @@ make clean
 
 ## Technical Notes
 
-- **No Network Calls:** This application works entirely offline. All greeting generation happens locally.
-- **No AI/LLM Integration:** Templates are generated using local ASCII art and pyfiglet.
-- **Christmas cards:** Not implemented in this version (intentionally excluded).
+- **Offline only** - No network calls or AI/LLM integration
+- **Local generation** - All ASCII art generated locally using pyfiglet
+- **Safe output** - Text is sanitized to prevent terminal injection
 
-## Requirements
+## Dependencies
 
-Core dependencies:
 - `click` - CLI framework
-- `rich` - Terminal UI (colors, spinners)
+- `rich` - Terminal UI (colors, panels, spinners, prompts)
 - `pyfiglet` - ASCII art text generation
-
-Development dependencies:
-- `pytest` - Testing framework
-- `pyinstaller` - Executable packaging
+- `pytest` - Testing (dev)
+- `pyinstaller` - Executable packaging (dev)
 
 ## License
 
