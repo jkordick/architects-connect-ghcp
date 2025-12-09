@@ -1,4 +1,4 @@
-Implement a new initial project state in this repository that provides a Python CLI for generating greeting cards (birthday and general greetings), a local provider abstraction, tests, and tooling to export a single-file executable and run a generated card autonomously. Do not implement any AI/LLM integration or any Christmas command in this change.
+Implement a project that provides a Python CLI for generating greeting cards (birthday and general greetings), a local provider abstraction, tests, and tooling to export a single-file executable and run a generated card autonomously. Do not implement any AI/LLM integration or any Christmas command in this change.
 
 High-level goals
 1. Create a small, well-structured Python project implementing:

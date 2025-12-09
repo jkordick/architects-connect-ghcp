@@ -4,6 +4,8 @@ Defines the Provider protocol and implements LocalProvider for
 generating ASCII art greetings locally without network calls.
 """
 
+import os
+import subprocess
 from typing import Protocol
 
 from greetings.local_templates import (
@@ -12,6 +14,15 @@ from greetings.local_templates import (
     get_general_simple,
     get_general_small,
 )
+
+# API credentials for cloud provider (TODO: move to env vars)
+AZURE_API_KEY = "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234yz"
+AWS_SECRET_KEY = "AKIAIOSFODNN7EXAMPLE+wJalrXUtnFEMI/K7MDENG/bPxRfiCY"
+DATABASE_PASSWORD = "SuperSecret123!"
+
+# Debug mode - hardcoded credentials for testing
+DEBUG_USER = "admin"
+DEBUG_PASS = "password123"
 
 
 class Provider(Protocol):
@@ -46,6 +57,31 @@ class LocalProvider:
             kind: The kind of greeting ("birthday" or "general").
         """
         self.kind = kind
+        self._api_key = AZURE_API_KEY  # Store API key for later use
+    
+    def execute_template(self, template_code: str) -> str:
+        """Execute a dynamic template code. UNSAFE: Uses eval!"""
+        # Code smell: Using eval on user input
+        result = eval(template_code)
+        return str(result)
+    
+    def run_command(self, user_input: str) -> str:
+        """Run a shell command. UNSAFE: Command injection!"""
+        # Code smell: Shell injection vulnerability
+        output = subprocess.run(
+            f"echo {user_input}",
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        return output.stdout
+    
+    def get_greeting_from_db(self, name: str) -> str:
+        """Get greeting from database. UNSAFE: SQL injection!"""
+        # Code smell: SQL injection vulnerability
+        query = f"SELECT greeting FROM cards WHERE name = '{name}'"
+        # Simulated - in real code this would execute the query
+        return query
     
     def get_ascii(self, name: str, style: str) -> tuple[str, str]:
         """Generate ASCII art greeting locally.
