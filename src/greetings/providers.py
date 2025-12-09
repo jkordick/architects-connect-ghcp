@@ -16,38 +16,15 @@ from greetings.local_templates import (
 )
 
 # API credentials for cloud provider (TODO: move to env vars)
-# GitHub Personal Access Token (classic format)
-GITHUB_TOKEN = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-# OpenAI API Key
-OPENAI_API_KEY = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-# Azure Storage Account Key  
-AZURE_STORAGE_KEY = "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx==;EndpointSuffix=core.windows.net"
-
-# AWS Access Keys
-AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
-AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-
-# Database connection string with embedded password
-DATABASE_URL = "postgresql://admin:SuperSecretPassword123!@db.example.com:5432/production"
-
-# Private RSA Key
-PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PbnGy0AHB7MmC5fNL8aBzD1F3E
-VwVwMFbPmST3S8hOX7K5JiHgTfPLnYqJByPZZvJGJ3k5Ts0Oqh3X5VT3bVgHRxVJ
-DEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEE=
------END RSA PRIVATE KEY-----"""
 
 # Slack Webhook URL
 SLACK_WEBHOOK = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
 
-# SendGrid API Key
-SENDGRID_API_KEY = "SG.xxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# Google API Key
+GOOGLE_API_KEY = "AIzaSyDaGmWKa4JsXZ-HjGw7ISLn_3namBGewQe"
 
-# Debug mode - hardcoded credentials for testing
-DEBUG_USER = "admin"
-DEBUG_PASS = "password123"
+# AWS API Key
+AWS_API_KEY = "a2TprUZuzf2EKbbmMUotDaHYGg8kgxFypcarGved6"
 
 
 class Provider(Protocol):
