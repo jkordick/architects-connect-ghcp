@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""Greetings CLI entrypoint.
+
+This script provides the main entry point for the greetings command-line tool.
+"""
+
+from greetings.cli import cli
+
+if __name__ == "__main__":
+    cli()
