@@ -6,6 +6,7 @@ A Python command-line tool for generating beautiful ASCII greeting cards in the 
 
 - 🎂 **Birthday cards** - Celebrate someone's special day
 - 👋 **General greetings** - Send warm wishes anytime
+- 💪 **Motivational cards** - Boost morale and spread positivity
 - 🧙 **Interactive wizard** - Step-by-step card creation
 - 🎨 **Multiple styles** - Banner, small, or simple designs
 - 💾 **Export support** - Save cards to text files
@@ -39,10 +40,11 @@ cd src && python3 -m greetings.cli
 ```
 
 The wizard will ask you:
-1. **Card type** - Birthday or General greeting
+1. **Card type** - Birthday, General greeting, or Motivational
 2. **Recipient name** - Who the card is for
-3. **Style** - Banner (large), Small (compact), or Simple (minimal)
-4. **Action** - Display now, export to file, or both
+3. **Theme** - For motivational cards: Monday, Keep Going, You Got This, Deadline, or Coffee
+4. **Style** - Banner (large), Small (compact), or Simple (minimal)
+5. **Action** - Display now, export to file, or both
 
 ### Direct Commands
 
@@ -69,6 +71,25 @@ Options:
 - `--style` - `banner` (default), `small`, or `simple`
 - `--export <path>` - Export to file instead of displaying
 
+#### Motivational Card
+
+```bash
+cd src && python3 -m greetings.cli motivate --name Alice --theme monday --style banner
+```
+
+Options:
+- `--name` (required) - Recipient's name
+- `--theme` - `monday` (default), `keepgoing`, `yougotthis`, `deadline`, or `coffee`
+- `--style` - `banner` (default), `small`, or `simple`
+- `--export <path>` - Export to file instead of displaying
+
+**Available Themes:**
+- `monday` - Monday motivation to start the week
+- `keepgoing` - Encouragement to push through
+- `yougotthis` - Confidence booster
+- `deadline` - Support during crunch time
+- `coffee` - Because coffee solves everything ☕
+
 ### Examples
 
 ```bash
@@ -86,6 +107,18 @@ cd src && python3 -m greetings.cli birthday --name "Charlie" --export card.txt
 
 # General greeting
 cd src && python3 -m greetings.cli general --name "Diana" --style small
+
+# Motivational cards - Monday motivation
+cd src && python3 -m greetings.cli motivate --name "Developer" --theme monday
+
+# Motivational cards - Deadline support
+cd src && python3 -m greetings.cli motivate --name "Team" --theme deadline --style small
+
+# Motivational cards - Coffee break
+cd src && python3 -m greetings.cli motivate --name "Friend" --theme coffee --style simple
+
+# Export motivational card
+cd src && python3 -m greetings.cli motivate --name "Alice" --theme yougotthis --export motivation.txt
 ```
 
 ## Development
