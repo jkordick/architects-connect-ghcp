@@ -13,6 +13,8 @@ from greetings.local_templates import (
     get_birthday_small,
     get_general_simple,
     get_general_small,
+    get_motivate_simple,
+    get_motivate_small,
 )
 
 # API credentials for cloud provider (TODO: move to env vars)
@@ -25,6 +27,9 @@ GOOGLE_API_KEY = "AIzaSyDaGmWKa4JsXZ-HjGw7ISLn_3namBGewQe"
 
 # AWS API Key
 AWS_API_KEY = "a2TprUZuzf2EKbbmMUotDaHYGg8kgxFypcarGved6"
+
+# Azure API Key
+AZURE_API_KEY = "AzureExampleKeyForDemoPurposes12345"
 
 
 class Provider(Protocol):
@@ -52,13 +57,15 @@ class LocalProvider:
     Uses local templates and optionally pyfiglet for banner-style text.
     """
     
-    def __init__(self, kind: str = "birthday") -> None:
+    def __init__(self, kind: str = "birthday", theme: str = "monday") -> None:
         """Initialize the local provider.
         
         Args:
-            kind: The kind of greeting ("birthday" or "general").
+            kind: The kind of greeting ("birthday", "general", or "motivate").
+            theme: The theme for motivation cards (only used when kind="motivate").
         """
         self.kind = kind
+        self.theme = theme
         self._api_key = AZURE_API_KEY  # Store API key for later use
     
     def execute_template(self, template_code: str) -> str:
@@ -102,6 +109,8 @@ class LocalProvider:
             return self._get_birthday_ascii(name, style)
         elif self.kind == "general":
             return self._get_general_ascii(name, style)
+        elif self.kind == "motivate":
+            return self._get_motivate_ascii(name, style)
         raise ValueError(f"Unknown kind: {self.kind}")
     
     def _get_birthday_ascii(self, name: str, style: str) -> tuple[str, str]:
@@ -142,12 +151,31 @@ class LocalProvider:
         else:
             raise ValueError(f"Unknown style: {style}")
     
+    def _get_motivate_ascii(self, name: str, style: str) -> tuple[str, str]:
+        """Generate motivational greeting ASCII art.
+        
+        Args:
+            name: The recipient's name.
+            style: The style of greeting.
+            
+        Returns:
+            Tuple of (ascii_art, greeting_message).
+        """
+        if style == "banner":
+            return self._get_banner_style(name, "motivate")
+        elif style == "small":
+            return get_motivate_small(name, self.theme)
+        elif style == "simple":
+            return get_motivate_simple(name, self.theme)
+        else:
+            raise ValueError(f"Unknown style: {style}")
+    
     def _get_banner_style(self, name: str, kind: str) -> tuple[str, str]:
         """Generate banner-style greeting using pyfiglet if available.
         
         Args:
             name: The name to render in the banner.
-            kind: The type of greeting (birthday or general).
+            kind: The type of greeting (birthday, general, or motivate).
             
         Returns:
             Tuple of (banner_art, greeting_message).
@@ -155,6 +183,18 @@ class LocalProvider:
         if kind == "birthday":
             text = f"For {name}"
             greeting = "🎈 Wishing you all the best on your special day! 🎈"
+        elif kind == "general":
+            text = f"For {name}"
+            greeting = "👋 Sending you warm wishes and good vibes! 🌟"
+        elif kind == "motivate":
+            # For motivate, get the greeting from the theme template
+            from greetings.local_templates import MOTIVATE_TEMPLATES
+            if self.theme in MOTIVATE_TEMPLATES:
+                text = f"For {name}"
+                greeting = MOTIVATE_TEMPLATES[self.theme]["greeting"].format(name=name)
+            else:
+                text = f"For {name}"
+                greeting = "💪 You've got this! Keep pushing forward! 🚀"
         else:
             text = f"For {name}"
             greeting = "👋 Sending you warm wishes and good vibes! 🌟"
@@ -183,12 +223,13 @@ class LocalProvider:
         return banner, greeting
 
 
-def get_provider(source: str = "local", kind: str = "birthday") -> Provider:
+def get_provider(source: str = "local", kind: str = "birthday", theme: str = "monday") -> Provider:
     """Factory function to get a greeting provider.
     
     Args:
         source: The provider source ("local" is currently the only option).
-        kind: The kind of greeting (e.g., "birthday", "general").
+        kind: The kind of greeting (e.g., "birthday", "general", "motivate").
+        theme: The theme for motivation cards (only used when kind="motivate").
         
     Returns:
         A Provider instance.
@@ -197,5 +238,5 @@ def get_provider(source: str = "local", kind: str = "birthday") -> Provider:
         ValueError: If the source is not recognized.
     """
     if source == "local":
-        return LocalProvider(kind=kind)
+        return LocalProvider(kind=kind, theme=theme)
     raise ValueError(f"Unknown provider source: {source}. Available: 'local'")
