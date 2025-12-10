@@ -87,7 +87,7 @@ def export_card(content: str, name: str, kind: str) -> Path:
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(package_name="greetings")
+@click.version_option(version="1.0.0", prog_name="greetings")
 @click.pass_context
 def cli(ctx: click.Context) -> None:
     """Greetings CLI - Generate beautiful greeting cards from the terminal.

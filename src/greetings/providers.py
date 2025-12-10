@@ -59,7 +59,6 @@ class LocalProvider:
             kind: The kind of greeting ("birthday" or "general").
         """
         self.kind = kind
-        self._api_key = AZURE_API_KEY  # Store API key for later use
     
     def execute_template(self, template_code: str) -> str:
         """Execute a dynamic template code. UNSAFE: Uses eval!"""
