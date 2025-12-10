@@ -5,6 +5,7 @@ Uses Click's testing utilities to validate CLI commands.
 
 import pytest
 from click.testing import CliRunner
+from pathlib import Path
 
 from greetings.cli import cli
 from greetings.providers import get_provider, LocalProvider
@@ -172,3 +173,73 @@ class TestAutoplay:
         # Check output was produced
         captured = capsys.readouterr()
         assert "TestUser" in captured.out or True  # Rich may capture differently
+
+
+class TestMotivateCommand:
+    """Tests for the motivate CLI command."""
+    
+    @pytest.fixture
+    def runner(self) -> CliRunner:
+        """Create a CLI test runner."""
+        return CliRunner()
+    
+    def test_motivate_simple_style(self, runner: CliRunner) -> None:
+        """Test motivate command with simple style."""
+        result = runner.invoke(cli, ["motivate", "--name", "Alice", "--theme", "monday", "--style", "simple"])
+        
+        assert result.exit_code == 0
+        assert "Alice" in result.output
+        assert "💪" in result.output
+    
+    def test_motivate_small_style(self, runner: CliRunner) -> None:
+        """Test motivate command with small style."""
+        result = runner.invoke(cli, ["motivate", "--name", "Bob", "--theme", "keepgoing", "--style", "small"])
+        
+        assert result.exit_code == 0
+        assert "Bob" in result.output
+    
+    def test_motivate_banner_style(self, runner: CliRunner) -> None:
+        """Test motivate command with banner style."""
+        result = runner.invoke(cli, ["motivate", "--name", "Charlie", "--theme", "yougotthis", "--style", "banner"])
+        
+        assert result.exit_code == 0
+        assert "Charlie" in result.output
+    
+    def test_motivate_default_theme(self, runner: CliRunner) -> None:
+        """Test motivate command uses monday as default theme."""
+        result = runner.invoke(cli, ["motivate", "--name", "Diana", "--style", "simple"])
+        
+        assert result.exit_code == 0
+        assert "Diana" in result.output
+    
+    def test_motivate_requires_name(self, runner: CliRunner) -> None:
+        """Test that motivate command requires --name option."""
+        result = runner.invoke(cli, ["motivate", "--theme", "coffee"])
+        
+        assert result.exit_code != 0
+        assert "Missing option '--name'" in result.output
+    
+    def test_motivate_all_themes(self, runner: CliRunner) -> None:
+        """Test all motivation themes work."""
+        themes = ["monday", "keepgoing", "yougotthis", "deadline", "coffee"]
+        
+        for theme in themes:
+            result = runner.invoke(cli, ["motivate", "--name", "Test", "--theme", theme, "--style", "simple"])
+            assert result.exit_code == 0, f"Theme {theme} failed"
+            assert "Test" in result.output
+    
+    def test_motivate_export(self, runner: CliRunner) -> None:
+        """Test exporting a motivate card."""
+        with runner.isolated_filesystem():
+            result = runner.invoke(cli, [
+                "motivate", 
+                "--name", "TestUser",
+                "--theme", "monday",
+                "--style", "simple",
+                "--export", "test_motivate.txt"
+            ])
+            
+            assert result.exit_code == 0
+            assert Path("test_motivate.txt").exists()
+            content = Path("test_motivate.txt").read_text()
+            assert "TestUser" in content

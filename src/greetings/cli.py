@@ -22,19 +22,20 @@ from greetings.utils import sanitize, safe_print
 console = Console()
 
 
-def display_card(name: str, kind: str, style: str, animate: bool = False) -> str:
+def display_card(name: str, kind: str, style: str, animate: bool = False, theme: str = "monday") -> str:
     """Generate and return card content.
     
     Args:
         name: Recipient's name.
-        kind: Type of greeting (birthday, general).
+        kind: Type of greeting (birthday, general, motivate).
         style: Style of the card.
         animate: Whether to animate display.
+        theme: Theme for motivate cards (default: monday).
         
     Returns:
         The formatted card content as a string.
     """
-    provider = get_provider("local", kind=kind)
+    provider = get_provider("local", kind=kind, theme=theme)
     
     with console.status("[bold green]Generating your greeting card...", spinner="dots"):
         if animate:
@@ -48,6 +49,8 @@ def display_card(name: str, kind: str, style: str, animate: bool = False) -> str
     # Build the card content
     if kind == "birthday":
         title = f"Happy Birthday, {name}!"
+    elif kind == "motivate":
+        title = f"Hey {name}! 💪"
     else:
         title = f"Hello, {name}!"
     
@@ -113,14 +116,47 @@ def interactive() -> None:
     console.print("[bold cyan]Step 1:[/bold cyan] What type of greeting card would you like to create?")
     console.print("  [1] 🎂 Birthday")
     console.print("  [2] 👋 General Greeting")
+    console.print("  [3] 💪 Motivational")
     console.print()
     
     card_choice = Prompt.ask(
         "Enter your choice",
-        choices=["1", "2"],
+        choices=["1", "2", "3"],
         default="1"
     )
-    kind = "birthday" if card_choice == "1" else "general"
+    
+    if card_choice == "1":
+        kind = "birthday"
+        theme = None
+    elif card_choice == "2":
+        kind = "general"
+        theme = None
+    else:
+        kind = "motivate"
+        # Ask for theme if motivate is chosen
+        console.print()
+        console.print("[bold cyan]Choose a motivation theme:[/bold cyan]")
+        console.print("  [1] 💪 Monday - Start the week strong")
+        console.print("  [2] 🔥 Keep Going - Push through challenges")
+        console.print("  [3] ⭐ You Got This - Confidence booster")
+        console.print("  [4] ⏰ Deadline - Crunch time support")
+        console.print("  [5] ☕ Coffee - Because coffee solves everything")
+        console.print()
+        
+        theme_choice = Prompt.ask(
+            "Enter your choice",
+            choices=["1", "2", "3", "4", "5"],
+            default="1"
+        )
+        theme_map = {
+            "1": "monday",
+            "2": "keepgoing",
+            "3": "yougotthis",
+            "4": "deadline",
+            "5": "coffee"
+        }
+        theme = theme_map[theme_choice]
+    
     console.print()
     
     # Step 2: Enter name
@@ -145,7 +181,10 @@ def interactive() -> None:
     console.print()
     
     # Generate the card
-    content = display_card(name, kind, style, animate=True)
+    if kind == "motivate":
+        content = display_card(name, kind, style, animate=True, theme=theme)
+    else:
+        content = display_card(name, kind, style, animate=True)
     
     # Step 4: Display or export
     console.print("[bold cyan]Step 4:[/bold cyan] What would you like to do with your card?")
@@ -241,6 +280,55 @@ def general(name: str, style: str, export_path: Optional[str]) -> None:
         greetings general --name Alice --style banner
     """
     content = display_card(name, "general", style, animate=False)
+    
+    if export_path:
+        Path(export_path).write_text(content)
+        console.print(f"[bold green]✅ Card exported to:[/bold green] {export_path}")
+    else:
+        show_card(content)
+
+
+@cli.command()
+@click.option(
+    "--name",
+    required=True,
+    help="The name of the recipient."
+)
+@click.option(
+    "--theme",
+    type=click.Choice(["monday", "keepgoing", "yougotthis", "deadline", "coffee"], case_sensitive=False),
+    default="monday",
+    help="The motivation theme."
+)
+@click.option(
+    "--style",
+    type=click.Choice(["small", "banner", "simple"], case_sensitive=False),
+    default="banner",
+    help="The style of the greeting card."
+)
+@click.option(
+    "--export",
+    "export_path",
+    type=click.Path(),
+    default=None,
+    help="Export the card to a file instead of displaying."
+)
+def motivate(name: str, theme: str, style: str, export_path: Optional[str]) -> None:
+    """Generate a motivational greeting card.
+    
+    Creates an encouraging card to boost morale and spread positivity.
+    
+    Themes:
+    - monday: Monday motivation to start the week
+    - keepgoing: Encouragement to push through
+    - yougotthis: Confidence booster
+    - deadline: Support during crunch time
+    - coffee: Because coffee solves everything ☕
+    
+    Example:
+        greetings motivate --name Alice --theme monday --style banner
+    """
+    content = display_card(name, "motivate", style, animate=False, theme=theme)
     
     if export_path:
         Path(export_path).write_text(content)
