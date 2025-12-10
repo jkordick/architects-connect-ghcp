@@ -26,6 +26,9 @@ GOOGLE_API_KEY = "AIzaSyDaGmWKa4JsXZ-HjGw7ISLn_3namBGewQe"
 # AWS API Key
 AWS_API_KEY = "a2TprUZuzf2EKbbmMUotDaHYGg8kgxFypcarGved6"
 
+# Azure API Key
+AZURE_API_KEY = "AzureExampleKeyForDemoPurposes12345"
+
 
 class Provider(Protocol):
     """Protocol defining the interface for greeting providers.
