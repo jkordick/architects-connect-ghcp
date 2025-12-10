@@ -13,6 +13,9 @@ from greetings.local_templates import (
     get_birthday_small,
     get_general_simple,
     get_general_small,
+    get_xmas_small,
+    get_xmas_banner,
+    get_xmas_simple,
 )
 
 # API credentials for cloud provider (TODO: move to env vars)
@@ -101,6 +104,8 @@ class LocalProvider:
             return self._get_birthday_ascii(name, style)
         elif self.kind == "general":
             return self._get_general_ascii(name, style)
+        elif self.kind == "xmas":
+            return self._get_xmas_ascii(name, style)
         raise ValueError(f"Unknown kind: {self.kind}")
     
     def _get_birthday_ascii(self, name: str, style: str) -> tuple[str, str]:
@@ -138,6 +143,25 @@ class LocalProvider:
             return get_general_small(name)
         elif style == "simple":
             return get_general_simple(name)
+        else:
+            raise ValueError(f"Unknown style: {style}")
+    
+    def _get_xmas_ascii(self, name: str, style: str) -> tuple[str, str]:
+        """Generate Christmas ASCII art.
+        
+        Args:
+            name: The recipient's name.
+            style: The style of greeting.
+            
+        Returns:
+            Tuple of (ascii_art, greeting_message).
+        """
+        if style == "banner":
+            return get_xmas_banner(name)
+        elif style == "small":
+            return get_xmas_small(name)
+        elif style == "simple":
+            return get_xmas_simple(name)
         else:
             raise ValueError(f"Unknown style: {style}")
     
@@ -186,8 +210,8 @@ def get_provider(source: str = "local", kind: str = "birthday") -> Provider:
     """Factory function to get a greeting provider.
     
     Args:
-        source: The provider source ("local" is currently the only option).
-        kind: The kind of greeting (e.g., "birthday", "general").
+        source: The provider source ("local" or "ai").
+        kind: The kind of greeting (e.g., "birthday", "general", "xmas").
         
     Returns:
         A Provider instance.
@@ -197,4 +221,7 @@ def get_provider(source: str = "local", kind: str = "birthday") -> Provider:
     """
     if source == "local":
         return LocalProvider(kind=kind)
-    raise ValueError(f"Unknown provider source: {source}. Available: 'local'")
+    elif source == "ai":
+        from greetings.ai_provider import AIProvider
+        return AIProvider(kind=kind)
+    raise ValueError(f"Unknown provider source: {source}. Available: 'local', 'ai'")

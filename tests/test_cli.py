@@ -5,6 +5,7 @@ Uses Click's testing utilities to validate CLI commands.
 
 import pytest
 from click.testing import CliRunner
+from unittest.mock import patch, MagicMock
 
 from greetings.cli import cli
 from greetings.providers import get_provider, LocalProvider
@@ -55,6 +56,59 @@ class TestBirthdayCommand:
         assert "Missing option '--name'" in result.output
 
 
+class TestXmasCommand:
+    """Tests for the xmas CLI command."""
+    
+    @pytest.fixture
+    def runner(self) -> CliRunner:
+        """Create a CLI test runner."""
+        return CliRunner()
+    
+    def test_xmas_simple_style(self, runner: CliRunner) -> None:
+        """Test xmas command with simple style."""
+        result = runner.invoke(cli, ["xmas", "--name", "Alice", "--style", "simple"])
+        
+        assert result.exit_code == 0
+        assert "Merry Christmas, Alice!" in result.output
+    
+    def test_xmas_small_style(self, runner: CliRunner) -> None:
+        """Test xmas command with small style."""
+        result = runner.invoke(cli, ["xmas", "--name", "Bob", "--style", "small"])
+        
+        assert result.exit_code == 0
+        assert "Merry Christmas, Bob!" in result.output
+    
+    def test_xmas_banner_style(self, runner: CliRunner) -> None:
+        """Test xmas command with banner (default) style."""
+        result = runner.invoke(cli, ["xmas", "--name", "Charlie", "--style", "banner"])
+        
+        assert result.exit_code == 0
+        assert "Merry Christmas, Charlie!" in result.output
+    
+    def test_xmas_default_style(self, runner: CliRunner) -> None:
+        """Test xmas command uses banner as default style."""
+        result = runner.invoke(cli, ["xmas", "--name", "Santa"])
+        
+        assert result.exit_code == 0
+        assert "Merry Christmas, Santa!" in result.output
+    
+    def test_xmas_requires_name(self, runner: CliRunner) -> None:
+        """Test that xmas command requires --name option."""
+        result = runner.invoke(cli, ["xmas"])
+        
+        assert result.exit_code != 0
+        assert "Missing option '--name'" in result.output
+    
+    def test_xmas_with_ai_flag_falls_back(self, runner: CliRunner) -> None:
+        """Test xmas command with --use-ai falls back gracefully when AI unavailable."""
+        # Without Azure credentials, it should fall back to local template
+        result = runner.invoke(cli, ["xmas", "--name", "Rudolph", "--use-ai"])
+        
+        # Should still succeed with fallback
+        assert result.exit_code == 0
+        assert "Merry Christmas, Rudolph!" in result.output
+
+
 class TestProvider:
     """Tests for the greeting providers."""
     
@@ -64,6 +118,15 @@ class TestProvider:
         
         assert isinstance(provider, LocalProvider)
         assert provider.kind == "birthday"
+    
+    def test_get_provider_ai(self) -> None:
+        """Test getting AI provider."""
+        from greetings.ai_provider import AIProvider
+        
+        provider = get_provider("ai", kind="xmas")
+        
+        assert isinstance(provider, AIProvider)
+        assert provider.kind == "xmas"
     
     def test_get_provider_unknown_raises(self) -> None:
         """Test that unknown provider source raises ValueError."""
@@ -96,12 +159,80 @@ class TestProvider:
         assert art  # Art should not be empty
         assert greeting
     
+    def test_local_provider_xmas_simple(self) -> None:
+        """Test LocalProvider xmas simple style."""
+        provider = LocalProvider(kind="xmas")
+        art, greeting = provider.get_ascii("Santa", "simple")
+        
+        assert "Santa" in art
+        assert "Merry Christmas" in art or "Christmas" in greeting
+    
+    def test_local_provider_xmas_small(self) -> None:
+        """Test LocalProvider xmas small style."""
+        provider = LocalProvider(kind="xmas")
+        art, greeting = provider.get_ascii("Santa", "small")
+        
+        assert "Santa" in art or "Xmas" in art
+        assert greeting
+    
+    def test_local_provider_xmas_banner(self) -> None:
+        """Test LocalProvider xmas banner style."""
+        provider = LocalProvider(kind="xmas")
+        art, greeting = provider.get_ascii("Santa", "banner")
+        
+        assert art  # Art should not be empty
+        assert greeting
+    
     def test_local_provider_unknown_style_raises(self) -> None:
         """Test that unknown style raises ValueError."""
         provider = LocalProvider(kind="birthday")
         
         with pytest.raises(ValueError, match="Unknown style"):
             provider.get_ascii("Test", "invalid_style")
+
+
+class TestAIProvider:
+    """Tests for the AI provider."""
+    
+    def test_ai_provider_fallback_on_missing_endpoint(self) -> None:
+        """Test that AI provider falls back when endpoint is not set."""
+        from greetings.ai_provider import AIProvider
+        
+        provider = AIProvider(kind="xmas")
+        art, greeting = provider.get_ascii("Test", "small")
+        
+        # Should fall back to local template
+        assert art  # Art should not be empty
+        assert "Christmas" in greeting or "holiday" in greeting.lower()
+    
+    def test_ai_provider_set_custom_theme(self) -> None:
+        """Test setting custom theme on AI provider."""
+        from greetings.ai_provider import AIProvider
+        
+        provider = AIProvider(kind="xmas")
+        provider.set_custom_theme("A friendly snowman")
+        
+        assert provider._custom_theme == "A friendly snowman"
+    
+    def test_ai_provider_build_prompts(self) -> None:
+        """Test building prompts for AI generation."""
+        from greetings.ai_provider import build_prompts
+        
+        system, user = build_prompts("Alice", "small", "A snowman")
+        
+        assert "ASCII" in system
+        assert "Alice" in user
+        assert "snowman" in user
+    
+    def test_ai_provider_process_output(self) -> None:
+        """Test processing AI output with ANSI codes."""
+        from greetings.ai_provider import process_ai_output
+        
+        input_text = "\\033[32mGreen\\033[0m"
+        output = process_ai_output(input_text)
+        
+        assert "\033[32m" in output
+        assert "\033[0m" in output
 
 
 class TestUtils:

@@ -22,32 +22,51 @@ from greetings.utils import sanitize, safe_print
 console = Console()
 
 
-def display_card(name: str, kind: str, style: str, animate: bool = False) -> str:
+def display_card(
+    name: str,
+    kind: str,
+    style: str,
+    animate: bool = False,
+    use_ai: bool = False,
+    ai_prompt: Optional[str] = None
+) -> str:
     """Generate and return card content.
     
     Args:
         name: Recipient's name.
-        kind: Type of greeting (birthday, general).
+        kind: Type of greeting (birthday, general, xmas).
         style: Style of the card.
         animate: Whether to animate display.
+        use_ai: Whether to use AI for generation.
+        ai_prompt: Custom AI prompt for generation.
         
     Returns:
         The formatted card content as a string.
     """
-    provider = get_provider("local", kind=kind)
+    source = "ai" if use_ai else "local"
+    provider = get_provider(source, kind=kind)
     
-    with console.status("[bold green]Generating your greeting card...", spinner="dots"):
-        if animate:
-            time.sleep(0.5)
+    # Set custom theme for AI provider if provided
+    if use_ai and ai_prompt:
+        provider.set_custom_theme(ai_prompt)
+    
+    status_msg = "[bold green]Generating your greeting card with AI..." if use_ai else "[bold green]Generating your greeting card..."
+    
+    with console.status(status_msg, spinner="dots"):
+        if animate or use_ai:
+            time.sleep(0.5 if not use_ai else 0)  # AI has its own latency
         art, greeting = provider.get_ascii(name, style)
     
-    # Sanitize outputs
-    art = sanitize(art)
+    # Sanitize outputs (but preserve ANSI codes for AI output colors)
+    if not use_ai:
+        art = sanitize(art)
     greeting = sanitize(greeting)
     
     # Build the card content
     if kind == "birthday":
         title = f"Happy Birthday, {name}!"
+    elif kind == "xmas":
+        title = f"Merry Christmas, {name}!"
     else:
         title = f"Hello, {name}!"
     
@@ -113,14 +132,21 @@ def interactive() -> None:
     console.print("[bold cyan]Step 1:[/bold cyan] What type of greeting card would you like to create?")
     console.print("  [1] 🎂 Birthday")
     console.print("  [2] 👋 General Greeting")
+    console.print("  [3] 🎄 Christmas")
     console.print()
     
     card_choice = Prompt.ask(
         "Enter your choice",
-        choices=["1", "2"],
+        choices=["1", "2", "3"],
         default="1"
     )
-    kind = "birthday" if card_choice == "1" else "general"
+    
+    if card_choice == "1":
+        kind = "birthday"
+    elif card_choice == "2":
+        kind = "general"
+    else:
+        kind = "xmas"
     console.print()
     
     # Step 2: Enter name
@@ -144,8 +170,26 @@ def interactive() -> None:
     style = style_map[style_choice]
     console.print()
     
+    # Step 3.5: AI option for Christmas cards
+    use_ai = False
+    ai_prompt = None
+    if kind == "xmas":
+        console.print("[bold cyan]Step 3.5:[/bold cyan] Would you like to use AI to generate custom ASCII art?")
+        console.print("  (requires Azure OpenAI - set AZURE_OPENAI_ENDPOINT env var)")
+        console.print()
+        use_ai = Confirm.ask("Use AI generation?", default=False)
+        
+        if use_ai:
+            console.print()
+            console.print("[bold cyan]Describe what you'd like to see[/bold cyan] (e.g., 'A snowman', 'Santa's sleigh', 'Reindeer')")
+            console.print("[dim]Press Enter for default Christmas tree theme[/dim]")
+            ai_prompt = Prompt.ask("Your creative theme", default="")
+            if not ai_prompt.strip():
+                ai_prompt = None
+        console.print()
+    
     # Generate the card
-    content = display_card(name, kind, style, animate=True)
+    content = display_card(name, kind, style, animate=True, use_ai=use_ai, ai_prompt=ai_prompt)
     
     # Step 4: Display or export
     console.print("[bold cyan]Step 4:[/bold cyan] What would you like to do with your card?")
@@ -241,6 +285,61 @@ def general(name: str, style: str, export_path: Optional[str]) -> None:
         greetings general --name Alice --style banner
     """
     content = display_card(name, "general", style, animate=False)
+    
+    if export_path:
+        Path(export_path).write_text(content)
+        console.print(f"[bold green]✅ Card exported to:[/bold green] {export_path}")
+    else:
+        show_card(content)
+
+
+@cli.command()
+@click.option(
+    "--name",
+    required=True,
+    help="The name of the recipient."
+)
+@click.option(
+    "--style",
+    type=click.Choice(["small", "banner", "simple"], case_sensitive=False),
+    default="banner",
+    help="The style of the greeting card."
+)
+@click.option(
+    "--use-ai",
+    is_flag=True,
+    default=False,
+    help="Enable AI-generated ASCII art (requires Azure OpenAI)."
+)
+@click.option(
+    "--ai-prompt",
+    default=None,
+    help="Custom creative theme for AI art generation (only used with --use-ai)."
+)
+@click.option(
+    "--export",
+    "export_path",
+    type=click.Path(),
+    default=None,
+    help="Export the card to a file instead of displaying."
+)
+def xmas(
+    name: str,
+    style: str,
+    use_ai: bool,
+    ai_prompt: Optional[str],
+    export_path: Optional[str]
+) -> None:
+    """Generate a Christmas greeting card.
+    
+    Creates a personalized Christmas greeting with ASCII art.
+    
+    Examples:
+        greetings xmas --name Santa --style banner
+        greetings xmas --name Alice --use-ai
+        greetings xmas --name Bob --use-ai --ai-prompt "A snowman with a top hat"
+    """
+    content = display_card(name, "xmas", style, animate=False, use_ai=use_ai, ai_prompt=ai_prompt)
     
     if export_path:
         Path(export_path).write_text(content)

@@ -108,3 +108,87 @@ def get_general_simple(name: str) -> tuple[str, str]:
         Tuple of (art/message, greeting).
     """
     return GENERAL_SIMPLE.format(name=name), GENERAL_GREETING
+
+
+# =============================================================================
+# CHRISTMAS (X-MAS) TEMPLATES
+# =============================================================================
+
+# Small Christmas tree template (max 40 chars wide, 8-12 lines)
+XMAS_TREE_SMALL = r"""
+        *
+       /|\
+      /_|_\
+     /__|__\
+    /___|___\
+   /____|____\
+       |||
+   Merry Xmas,
+      {name}!
+"""
+
+# Banner Christmas tree template (max 60 chars wide, 12 lines)
+XMAS_TREE_BANNER = r"""
+              *
+             /|\
+            / | \
+           /  |  \
+          /   |   \
+         / *  |  * \
+        /  *  |  *  \
+       /__*___|___*__\
+            |||
+       Merry Christmas,
+           {name}!
+    🎄 ❄️ 🎁 ⛄ 🦌 🎅 ❄️ 🎄
+"""
+
+# Simple one-liner template with Christmas emojis
+XMAS_SIMPLE = "🎄 Merry Christmas, {name}! 🎅🎁⛄"
+
+# Christmas greeting message
+XMAS_GREETING = "🎄 Wishing you a magical holiday season filled with joy and cheer! ❄️"
+
+
+# =============================================================================
+# CHRISTMAS FUNCTIONS
+# =============================================================================
+
+def get_xmas_small(name: str) -> tuple[str, str]:
+    """Get small ASCII Christmas tree art with name.
+    
+    Args:
+        name: The name to include in the greeting.
+        
+    Returns:
+        Tuple of (art, greeting message).
+    """
+    centered_name = name[:12].center(12)
+    art = XMAS_TREE_SMALL.format(name=centered_name)
+    return art, XMAS_GREETING
+
+
+def get_xmas_banner(name: str) -> tuple[str, str]:
+    """Get large banner ASCII Christmas tree art with name.
+    
+    Args:
+        name: The name to include in the greeting.
+        
+    Returns:
+        Tuple of (art, greeting message).
+    """
+    centered_name = name[:15].center(15)
+    art = XMAS_TREE_BANNER.format(name=centered_name)
+    return art, XMAS_GREETING
+
+
+def get_xmas_simple(name: str) -> tuple[str, str]:
+    """Get simple one-line Christmas greeting.
+    
+    Args:
+        name: The name to include in the greeting.
+        
+    Returns:
+        Tuple of (art/message, greeting).
+    """
+    return XMAS_SIMPLE.format(name=name), XMAS_GREETING

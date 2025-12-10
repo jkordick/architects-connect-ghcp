@@ -1,6 +1,6 @@
 ---
 description: "🎅 Ho Ho Ho! Santa's magical ASCII art workshop - creating festive terminal art!"
-tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'agent', 'todo']
+tools: ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'azure-mcp/*', 'agent', 'todo']
 ---
 
 # 🎅🎄 Santa's ASCII Art Workshop 🎄🎅

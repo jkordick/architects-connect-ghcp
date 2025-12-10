@@ -3,6 +3,11 @@ click==7.1.2
 rich==10.0.0
 pyfiglet==0.7
 
+# AI dependencies for Azure OpenAI
+openai>=1.0.0
+azure-identity>=1.15.0
+python-dotenv
+
 # Development dependencies
 pytest==6.2.0
 pytest-cov==2.12.0
